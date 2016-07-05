@@ -1,13 +1,18 @@
 FROM quay.io/stonevil/alpine-glibc
 MAINTAINER stonevil@gmail.com
 
-ENV INFLUXDB_VERSION=${INFLUXDB_VERSION:-0.12.2-1}
+ENV INFLUXDB_VERSION=${INFLUXDB_VERSION:-0.13.0}
 ENV INFLUXDB_DOWNLOAD_URL=https://dl.influxdata.com/influxdb/releases/influxdb-${INFLUXDB_VERSION}_linux_amd64.tar.gz
+ENV INFLUXDB_BASE_PATH=/opt
+ENV INFLUXDB_PATH $INFLUXDB_BASE_PATH/influxdb
+ENV PATH $INFLUXDB_PATH/usr/bin:$PATH
 
 LABEL com.stonevil.influxdb.version=${INFLUXDB_VERSION}
 
-RUN ${SOFTWARE_DOWNLOAD_CMD} ${INFLUXDB_DOWNLOAD_URL} | tar -zxvf - -C / && \
-  adduser -D -H -h /data/influxdb -s /bin/bash influx
+RUN ${SOFTWARE_DOWNLOAD_CMD} ${INFLUXDB_DOWNLOAD_URL} | tar -zxvf - -C /tmp && \
+  cp -Rf /tmp/influxdb*/* / && rm -Rf /tmp/influxdb* && \
+  adduser -D -H -h /data/influxdb -s /bin/bash influx && \
+  ${APK_CACHE_RM}
 
 ADD _rootfs /
 ONBUILD ADD _rootfs_vendor /
