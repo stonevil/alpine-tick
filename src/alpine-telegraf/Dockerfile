@@ -14,6 +14,8 @@ RUN ${SOFTWARE_DOWNLOAD_CMD} ${TELEGRAF_DOWNLOAD_URL} | tar -zxvf - -C /tmp && \
 ADD _rootfs /
 ONBUILD ADD _rootfs_vendor /
 
+EXPOSE 8125/udp 8092/udp 8094
+
 ENV INFLUXDB_SENSORS_DB=${INFLUXDB_SENSORS_DB:-sensors}
 ENV INFLUXDB_SENSORS=${INFLUXDB_SENSORS:-sensors}
 ENV INFLUXDB_SENSORS_PASSWORD=${INFLUXDB_SENSORS_PASSWORD:-SensorsPassword}
@@ -25,4 +27,4 @@ ENV DOCKER_ENDPOINT=${DOCKER_ENDPOINT:-unix:///var/run/docker.sock}
 
 CMD mkdir -p /data/telegraf && chown -Rf telegraf /data/telegraf && \
   sed -i -e 's|_INFLUXDBURL_|'"${INFLUXDB_HOST}:${INFLUXDB_PORT}"'|g' -e 's|_INFLUXDBSENSORSDB_|'"${INFLUXDB_SENSORS_DB}"'|g' -e 's|_INFLUXDBSENSORS_|'"${INFLUXDB_SENSORS}"'|g' -e 's|_INFLUXDBSENSORSPASSWORD_|'"${INFLUXDB_SENSORS_PASSWORD}"'|g' -e 's|_DOCKERENDPOINT_|'"${DOCKER_ENDPOINT}"'|g' /etc/telegraf/telegraf.conf && \
-  gosu root telegraf -config /etc/telegraf/telegraf.conf
+  telegraf -config /etc/telegraf/telegraf.conf
